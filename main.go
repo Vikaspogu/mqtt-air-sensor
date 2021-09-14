@@ -3,13 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/joho/godotenv"
 	"github.com/ryszard/sds011/go/sds011"
+	log "github.com/sirupsen/logrus"
 )
 
 type Config struct {
@@ -20,6 +20,7 @@ type Config struct {
 }
 
 func main() {
+	log.SetFormatter(&log.JSONFormatter{})
 	godotenv.Load()
 	c := Config{
 		Topic:          os.Getenv("TOPIC"),
@@ -38,11 +39,9 @@ func main() {
 	}
 
 	sensor, err := sds011.New(c.SensorPortPath)
-
 	if err != nil {
 		log.Fatalf("ERROR: sds011.New, %v", err)
 	}
-
 	defer sensor.Close()
 
 	sensor.Awake()
@@ -50,19 +49,23 @@ func main() {
 	sensor.MakeActive()
 
 	for {
-		point, _ := sensor.Get()
-
-		fmt.Fprintf(os.Stdout, "%v,%v,%v\n", point.Timestamp.Format(time.RFC3339), point.PM25, point.PM10)
-
+		point, err := sensor.Get()
+		if err != nil {
+			log.Errorf("ERROR: sensor.Get: %v", err)
+			continue
+		}
+		log.WithFields(log.Fields{
+			"timestamp": point.Timestamp.Format(time.RFC3339),
+			"pm25":      point.PM25,
+			"pm10":      point.PM10,
+		})
 		pointJSON, err := json.Marshal(point)
-
 		if err != nil {
 			log.Printf("ERROR: Marshal: %v", err)
 			continue
 		}
-
 		if token := client.Publish(c.Topic, 0, false, pointJSON); token.Wait() && token.Error() != nil {
-			fmt.Print(token.Error())
+			log.Info(token.Error())
 		}
 	}
 }
