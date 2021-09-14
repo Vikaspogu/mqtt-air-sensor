@@ -45,36 +45,12 @@ func main() {
 
 	defer sensor.Close()
 
-	err = sensor.Awake()
-	if err != nil {
-		log.Fatalf("Error: sensor.Awake: %v", err)
-	}
-
-	if err = sensor.SetCycle(c.CycleMinutes); err != nil {
-		log.Printf("ERROR: sensor.SetCycle: %v", err)
-	}
-
-	err = sensor.MakeActive()
-
-	if err != nil {
-		log.Fatalf("ERROR: sensor.MakeActive: %v", err)
-	}
+	sensor.Awake()
+	sensor.SetCycle(c.CycleMinutes)
+	sensor.MakeActive()
 
 	for {
-		point, err := sensor.Get()
-
-		// var noError error
-		// point, err := sds011.Point{
-		// 	PM10:      float64(rand.Intn(20)),
-		// 	PM25:      float64(rand.Intn(20)),
-		// 	Timestamp: time.Now(),
-		// }, noError
-		// time.Sleep(5 * time.Second)
-
-		if err != nil {
-			log.Printf("ERROR: sensor.Get: %v", err)
-			continue
-		}
+		point, _ := sensor.Get()
 
 		fmt.Fprintf(os.Stdout, "%v,%v,%v\n", point.Timestamp.Format(time.RFC3339), point.PM25, point.PM10)
 
