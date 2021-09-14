@@ -54,11 +54,8 @@ func main() {
 			log.Errorf("ERROR: sensor.Get: %v", err)
 			continue
 		}
-		log.WithFields(log.Fields{
-			"timestamp": point.Timestamp.Format(time.RFC3339),
-			"pm25":      point.PM25,
-			"pm10":      point.PM10,
-		})
+		log.Printf("Timestamp: %v,PM25: %v,PM10: %v\n", point.Timestamp.Format(time.RFC3339), point.PM25, point.PM10)
+		fmt.Fprintf(os.Stdout, "%v,%v,%v\n", point.Timestamp.Format(time.RFC3339), point.PM25, point.PM10)
 		pointJSON, err := json.Marshal(point)
 		if err != nil {
 			log.Printf("ERROR: Marshal: %v", err)
