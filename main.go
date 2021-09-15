@@ -44,10 +44,6 @@ func main() {
 	}
 	defer sensor.Close()
 
-	sensor.Awake()
-	sensor.SetCycle(c.CycleMinutes)
-	sensor.MakeActive()
-
 	for {
 		point, err := sensor.Get()
 		if err != nil {
@@ -55,7 +51,7 @@ func main() {
 			continue
 		}
 		log.Printf("Timestamp: %v,PM25: %v,PM10: %v\n", point.Timestamp.Format(time.RFC3339), point.PM25, point.PM10)
-		fmt.Fprintf(os.Stdout, "%v,%v,%v\n", point.Timestamp.Format(time.RFC3339), point.PM25, point.PM10)
+		// fmt.Fprintf(os.Stdout, "%v,%v,%v\n", point.Timestamp.Format(time.RFC3339), point.PM25, point.PM10)
 		pointJSON, err := json.Marshal(point)
 		if err != nil {
 			log.Printf("ERROR: Marshal: %v", err)
